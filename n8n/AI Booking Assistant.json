@@ -1,0 +1,848 @@
+{
+  "name": "AI Booking Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2016,
+        640
+      ],
+      "id": "3656a7af-9850-48f4-940c-e887238a63e4",
+      "name": "Telegram Trigger",
+      "notesInFlow": true,
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b6b7cdf7-2375-4446-b61a-e80c817e58ef",
+                    "leftValue": "={{ $json.next_action }}",
+                    "rightValue": "suggest_dates",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Suggest Dates"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0d392ed9-a214-4e68-8194-9be3d58f54bd",
+                    "leftValue": "={{ $json.next_action }}",
+                    "rightValue": "show_slots",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Show Slots"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4266bb8a-debe-4162-aef2-f98a86d27bb2",
+                    "leftValue": "={{ $json.next_action }}",
+                    "rightValue": "confirm_booking",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Confirm Booking"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5476a59a-57df-4a31-982f-5cd3ce95084a",
+                    "leftValue": "={{ $json.next_action }}",
+                    "rightValue": "cancel_booking",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cancel Booking"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7e9febc9-588d-422e-9832-a2a0229a147e",
+                    "leftValue": "={{ $json.next_action }}",
+                    "rightValue": "answer_question",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Answer Question"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -976,
+        592
+      ],
+      "id": "5022dea6-2531-4f6f-8364-79ef73e0cc52",
+      "name": "Switch",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get state from previous HTTP node\nconst state = items[0].json;\n\n// Get data from Set node\nconst user_id = $('Extract').first().json.user_id;\nconst message = $('Extract').first().json.message;\n\n// If no state → initialize\nif (!state || Object.keys(state).length === 0) {\n  return [{\n    json: {\n      user_id,\n      message,\n      state: {\n        intent: null,\n        date: null,\n        time: null,\n        next_action: null,\n        reply: null,\n        current_date: Date().toString()\n      }\n    }\n  }];\n}\nstate.current_date = new Date().toISOString();\n// Otherwise keep existing state\nreturn [{\n  json: {\n    user_id,\n    message,\n    state\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        640
+      ],
+      "id": "38146255-e292-469a-8cf9-8c329bd53125",
+      "name": "Build JSON",
+      "notesInFlow": false,
+      "notes": "Build JSON"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"user_id\": \"{{ $json.message.chat.id }}\",\n  \"message\": \"{{ $json.message.text }}\"\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1840,
+        640
+      ],
+      "id": "8bbb763d-2e06-4c8c-81a9-b358c1fae4a2",
+      "name": "Extract",
+      "notesInFlow": true,
+      "notes": "Extract User´s message\n"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.API_BASE_URL + \"/api/state/\" + $json.user_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1664,
+        640
+      ],
+      "id": "0ca1f8b5-1785-4f80-86e0-d96e60a8e0a2",
+      "name": "GET",
+      "alwaysOutputData": false,
+      "notesInFlow": true,
+      "notes": "Get User´s State"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.API_BASE_URL + \"/api/ai/decision\"}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"{{$json.message}}\",\n  \"state\": {{$json.state.toJsonString()}}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1312,
+        640
+      ],
+      "id": "e3e81231-323a-4ab3-b7e0-29c3b05ae83d",
+      "name": "LLM",
+      "notesInFlow": true,
+      "notes": "Call OpenAI API"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.API_BASE_URL + \"/api/availability\"}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "date",
+              "value": "={{ $json.date}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -528,
+        416
+      ],
+      "id": "69884ddc-8cb0-4877-931e-590059214095",
+      "name": "GET-Slots",
+      "notesInFlow": true,
+      "notes": "Suggested Slots\n"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.API_BASE_URL + \"/api/available-dates\"}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -528,
+        48
+      ],
+      "id": "4607383b-705d-41ed-aef8-b544fbd49476",
+      "name": "GET-Date",
+      "notesInFlow": false,
+      "notes": "Get Dates"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cf251c93-e756-418c-9ed1-9a1be417a422",
+              "leftValue": "={{ $json.slots}}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        416
+      ],
+      "id": "8997acaa-b7ce-478a-a253-b4df6cabb984",
+      "name": "If slots exist"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $('LLM').first().json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        1040
+      ],
+      "id": "7725169b-c339-4e23-a487-ccb2f4628a92",
+      "name": "Send a text message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.API_BASE_URL + \"/api/state\"}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    user_id: String($('Telegram Trigger').first().json.message.chat.id),\n    state: $json.state\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -912,
+        384
+      ],
+      "id": "0fe354d6-578e-4ae2-a36c-3612211d3ce0",
+      "name": "POST-State"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.API_BASE_URL + \"/api/cancel\"}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"user_id\": \"{{ $('Telegram Trigger').item.json.message.chat.id }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -528,
+        832
+      ],
+      "id": "5c1d81dd-1330-4c91-a036-803f6f412948",
+      "name": "POST-Cancel"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.API_BASE_URL + \"/api/state\"}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    user_id: String($('Telegram Trigger').first().json.message.chat.id),\n    state: $json.state\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        896
+      ],
+      "id": "5e8a5315-4b60-44be-b3ea-ca3c540c0e7a",
+      "name": "POST-State1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"state\": {{ $json }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1088,
+        384
+      ],
+      "id": "82459c19-d93b-453d-82e3-91889ba3f2d0",
+      "name": "Convert to State",
+      "notesInFlow": true,
+      "notes": "Convert to state object"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d3e9b4b5-8bc4-45ef-8983-b36d6b5d8ed1",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -272,
+        768
+      ],
+      "id": "aa99aa57-3790-498e-a3ed-d5713da13914",
+      "name": "If POST success"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        192
+      ],
+      "id": "6a9fc482-ac57-4bd0-b61a-fbb24d1c49c2",
+      "name": "Send message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.API_BASE_URL + \"/api/state\"}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    user_id: String($('Telegram Trigger').first().json.message.chat.id),\n    state: $json.state\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "e287e11d-636f-4228-8207-934886a7381a",
+      "name": "POST-State2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const slots = $input.first().json.slots;\n\nlet text = $('LLM').first().json.reply + \"\\n\\n\";\n\nfor (const d of slots) {\n  text += `📅 ${d}\\n\\n`;\n}\n\ntext += \"Which one works?\\n\"\n\nreturn [{ json: { reply: text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        320
+      ],
+      "id": "4255b4d8-2022-41fd-aac3-24ac6008c7e6",
+      "name": "Generate Response 2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dates = $input.first().json.dates;\nlet slots = null;\n\ntry {\n  slots = $('GET-Slots').first().json.slots;\n} catch (e) {\n  slots = null;\n}\n\nlet text = $('LLM').first().json.reply + \"\\n\\n\";\n\n\ntext += \"Here are some available dates:\\n\\n\";\n\nfor (const d of dates) {\n  text += `📅 ${d}\\n\\n`;\n}\n\ntext += \"Which one works?\\n\"\n\nreturn [{ json: { reply: text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        48
+      ],
+      "id": "07e8f5a9-0d4b-4eb0-9cba-7dfd8f96f200",
+      "name": "Generate Response 1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let booking = null;\nlet cancel = null;\nlet text = \"\";\n\ntry {\n  booking = $('POST-Book').first().json.success;\n} catch (e) {\n  booking = null;\n}\n\ntry {\n  cancel = $('POST-Cancel').first().json.success;\n} catch (e) {\n  cancel = null;\n}\n\nif (booking === true) {\n  text = \"Your booking has been confirmed!\";\n} else if (cancel === true) {\n  text = \"Your booking has been canceled!\";\n} else {\n  text = \"Something went wrong. Please try again.\";\n}\n\n\nreturn [{ json: { reply: text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        704
+      ],
+      "id": "73972e5c-3c8d-4238-a301-a97840c67a1a",
+      "name": "Generate Response 3"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n    json: {\n      state: {\n        intent: $('LLM').first().json.intent,\n        date: null,\n        time: null,\n        next_action: \"suggest_dates\",\n        reply: $input.first().json.message,\n        current_date: Date().toString()\n      }\n    }\n  }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        896
+      ],
+      "id": "5e296d8d-5d55-4d74-a59d-533092c2316f",
+      "name": "Convert to State 2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n    json: {\n      state: {\n        intent: $('LLM').first().json.intent,\n        date: $('LLM').first().json.date,\n        time: $('LLM').first().json.time,\n        next_action: \"suggest_dates\",\n        reply: $('LLM').first().json.reply  + ($input.first().json.reply || \"\")\n      }\n    }\n  }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -112
+      ],
+      "id": "c307def1-00eb-4d78-ada8-bba520a7062c",
+      "name": "Convert to State 1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { reply: $input.first().json.state.reply} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        896
+      ],
+      "id": "7e17d24c-7108-4cc1-941b-625fea420033",
+      "name": "Generate Response 4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.API_BASE_URL + \"/api/book\"}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    user_id: String($('Telegram Trigger').first().json.message.chat.id),\ndate: String($('LLM').first().json.date),\nslot: String($('LLM').first().json.time)\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -528,
+        688
+      ],
+      "id": "0f9882ab-3312-4c74-9fbd-daaf27ae036e",
+      "name": "POST-Book"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "GET-Date",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET-Slots",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "POST-Book",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "POST-Cancel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build JSON": {
+      "main": [
+        [
+          {
+            "node": "LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "GET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET": {
+      "main": [
+        [
+          {
+            "node": "Build JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Convert to State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET-Date": {
+      "main": [
+        [
+          {
+            "node": "Generate Response 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET-Slots": {
+      "main": [
+        [
+          {
+            "node": "If slots exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If slots exist": {
+      "main": [
+        [
+          {
+            "node": "Generate Response 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET-Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST-Cancel": {
+      "main": [
+        [
+          {
+            "node": "If POST success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST-State1": {
+      "main": [
+        [
+          {
+            "node": "Generate Response 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to State": {
+      "main": [
+        [
+          {
+            "node": "POST-State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If POST success": {
+      "main": [
+        [
+          {
+            "node": "Generate Response 3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to State 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Response 2": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Convert to State 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Response 1": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Convert to State 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Response 3": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to State 2": {
+      "main": [
+        [
+          {
+            "node": "POST-State1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to State 1": {
+      "main": [
+        [
+          {
+            "node": "POST-State2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Response 4": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST-Book": {
+      "main": [
+        [
+          {
+            "node": "If POST success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "689a5269-d795-4b9f-a015-5bf155a63f06",
+  "id": "EMtTVWFctmNBRVQu",
+  "tags": []
+}
