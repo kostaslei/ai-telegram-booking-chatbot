@@ -173,8 +173,8 @@ The LLM is responsible for:
 ## 🐳 Getting Started (Docker Compose)
 1. **Clone the repository**
 ```
-git clone <your-repo-url>
-cd <your-repo-name>
+git clone https://github.com/kostaslei/ai-telegram-booking-chatbot
+cd ai-telegram-booking-chatbot
 ```
 2. **Start the full system**
 ```docker-compose up --build```
